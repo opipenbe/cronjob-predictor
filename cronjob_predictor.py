@@ -9,12 +9,17 @@ from datetime import datetime
 
 #Todo arguments, users, entry print
 
+#date -d"2016-05-07 05:00:00" +%d
+
 def getCronTable(): #read crontab output into variable
-    cronTable = subprocess.check_output('crontab -l', shell=True)
+    try:
+        cronTable = subprocess.check_output('crontab -l', shell=True)
+    except: #no cron entries
+        quit()
     return cronTable
 
-def getCronEntries(): #append crontab entry lines into list
-    cronTable = getCronTable()
+def findCronJobs(cronVar): #append cronjob lines into list
+    cronTable = cronVar
     lines = []
     for line in cronTable.splitlines():
         line = line.lstrip() #remove leading whitespaces
@@ -22,7 +27,7 @@ def getCronEntries(): #append crontab entry lines into list
             lines.append(line)
     return lines
 
-def validateCronEntry(cronLine): #validate correct crontab entry
+def validateCronEntry(cronLine): #validates correct crontab lines
     if not cronLine.strip(): #check for empty lines
         return False
     if cronLine.startswith("#"): #check if it is not comment
@@ -38,19 +43,18 @@ def timeLeft(arg):
     return diff.seconds
 
 def getTime(cronFormat):
-    base=datetime.now() #get current system time
+    base = datetime.now() #get current system time
     #print "Current time:",base
     iter = croniter(cronFormat, base)
     #TODO error handling, time global var?
     aeg = iter.get_next(datetime)
-    print aeg
     #Todo next
     return aeg
 
-def syntaxToTime(): #create new list and replace cron syntax with times. Siia TODO
+def syntaxToTime(cronJobLines): #create new list and replace cron syntax with times. Siia TODO
     #TODO better solution, better regex
     orderedList = []
-    for line in getCronEntries(): #convert cron syntax to time
+    for line in cronJobLines: #convert cron syntax to time
         muutuja = re.match('^((?:[^ ]* ){4}[^ ]*)',line).group(0)
         muutuja2 = str(getTime(muutuja)) #hack
         line = line.replace(muutuja, muutuja2)
@@ -60,11 +64,14 @@ def syntaxToTime(): #create new list and replace cron syntax with times. Siia TO
 def sortByTime(list):
     return sorted(list)
 
-def sortByTimeReverse(list):
-    return sorted(list, reversed)
+def firstCronJob(list):
+    return (list[:1] or "") #"" means in case crontab is empty
 
-'''
-for line in sortByTime(syntaxToTime()):
-    print line
-'''
-getTime("*/30 * * * *")
+
+if __name__ == "__main__":
+    cronTable = getCronTable()
+    cronJobs = findCronJobs(cronTable)
+    convertedJobs = syntaxToTime(cronJobs)
+    cronJobs = sortByTime(convertedJobs)
+    print firstCronJob(cronJobs)
+
