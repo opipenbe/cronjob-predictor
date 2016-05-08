@@ -32,12 +32,12 @@ def validate_cron_syntax(cron_line): #validates correct crontab lines
     if cron_line.startswith("#"): #check if it is not comment
         return False
     if cron_line.startswith("@"): #check if it is special string
-        print("Crontab entry contains special strings. Sorry they are not supported yet :(") #TODO?
+        print("Crontab entry contains special string(s). Sorry is not supported yet :(") #TODO?
         quit(1)
     return True
 
-def get_time(cron_format):
-    base = datetime.now() #get current system time
+def get_time(cron_format, base = datetime.now()):
+    #base = datetime.now() #get current system time
     #print "Current time:",base
     try:
         iter = croniter(cron_format, base)
@@ -47,14 +47,15 @@ def get_time(cron_format):
     aeg = iter.get_next(datetime) #time global var and next time?
     return aeg
 
-def syntax_to_time(cronjob_line_list): #create new list and replace cron syntax with times. Siia TODO
-    #TODO better solution, better regex
+def syntax_to_time(cronjob_line_list, show_time_only=False): #create new list and replace cron syntax with times.
     converted_list = []
     for line in cronjob_line_list: #convert cron syntax to time
-        muutuja = re.match('^([\S]+[\s]{1,}){4}[^ ]',line).group(0)#^((?:[^ ]* ){4}[^ ]*)
-        print muutuja
-        muutuja2 = str(get_time(muutuja)) #hack
-        line = line.replace(muutuja, muutuja2)
+        cron_syntax = re.match('^([\S]+[\s]{1,}){4}[^ ]',line).group(0) #find cron syntax
+        converted_time = str(get_time(cron_syntax)) #hack
+        if show_time_only == True:
+            line = converted_time
+        else:
+            line = line.replace(cron_syntax, converted_time)
         converted_list.append(line)
     return converted_list
 
@@ -71,7 +72,8 @@ def first_cron_job(list):
 if __name__ == "__main__":
     cron_table = get_cron_table()
     cron_jobs = find_cron_jobs(cron_table)
-    converted_jobs = syntax_to_time(cron_jobs)
+    converted_jobs = syntax_to_time(cron_jobs, show_time_only=True)
     cron_jobs = sort_by_time(converted_jobs)
     print first_cron_job(cron_jobs)
+
 
