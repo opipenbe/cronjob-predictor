@@ -1,44 +1,53 @@
+#!/usr/bin/python
+
 __author__ = 'Olari Pipenberg'
 
 import subprocess
 import re
+import argparse
 from croniter import croniter
 from datetime import datetime
 
-#Todo time scheduling
+parser = argparse.ArgumentParser()
+parser.add_argument("-all", help="show cronjob time and corresponding command",
+                    action="store_true")
+parser.add_argument("-user", help="specify cron table user")
+args = parser.parse_args()
 
-#Todo arguments, users, entry print
+# TODO manual
 
-#date -d"2016-05-07 05:00:00" +%d
+# date -d"2016-05-07 05:00:00" +%d
 
-def get_cron_table(): #read crontab output into variable
+def get_cron_table(): # read crontab output into variable
     try:
-        cron_table = subprocess.check_output('crontab -l', shell=True)
-    except: #no cron entries
+        if args.user:
+            cron_table = subprocess.check_output('crontab -l', shell=True)
+        else:
+            cron_table = subprocess.check_output('crontab -l', shell=True)
+    except: # no cron entries
+        raise
         quit()
     return cron_table
 
-def find_cron_jobs(cron_table): #append cronjob lines into list
+def find_cron_jobs(cron_table): # append cronjob lines into list
     lines = []
     for line in cron_table.splitlines():
-        line = line.lstrip() #remove leading whitespaces
+        line = line.lstrip() # remove leading whitespaces
         if validate_cron_syntax(line) == True:
             lines.append(line)
     return lines
 
-def validate_cron_syntax(cron_line): #validates correct crontab lines
-    if not cron_line.strip(): #check for empty lines
+def validate_cron_syntax(cron_line): # validates correct crontab lines
+    if not cron_line.strip(): # check for empty lines
         return False
-    if cron_line.startswith("#"): #check if it is not comment
+    if cron_line.startswith("#"): # check if it is not comment
         return False
-    if cron_line.startswith("@"): #check if it is special string
+    if cron_line.startswith("@"): # check if it is special string
         print("Crontab entry contains special string(s). Sorry is not supported yet :(") #TODO?
         quit(1)
     return True
 
 def get_time(cron_format, base = datetime.now()):
-    #base = datetime.now() #get current system time
-    #print "Current time:",base
     try:
         iter = croniter(cron_format, base)
     except ValueError:
@@ -47,11 +56,11 @@ def get_time(cron_format, base = datetime.now()):
     aeg = iter.get_next(datetime) #time global var and next time?
     return aeg
 
-def syntax_to_time(cronjob_line_list, show_time_only=False): #create new list and replace cron syntax with times.
+def syntax_to_time(cronjob_line_list, show_time_only=False, time_base = datetime.now()): #create new list and replace cron syntax with times.
     converted_list = []
     for line in cronjob_line_list: #convert cron syntax to time
         cron_syntax = re.match('^([\S]+[\s]{1,}){4}[^ ]',line).group(0) #find cron syntax
-        converted_time = str(get_time(cron_syntax)) #hack
+        converted_time = str(get_time(cron_syntax, base=time_base))
         if show_time_only == True:
             line = converted_time
         else:
@@ -70,10 +79,14 @@ def first_cron_job(list):
     return job
 
 if __name__ == "__main__":
+
+    show_time = True
+    if args.all:
+        show_time = False
+
     cron_table = get_cron_table()
     cron_jobs = find_cron_jobs(cron_table)
-    converted_jobs = syntax_to_time(cron_jobs, show_time_only=True)
+
+    converted_jobs = syntax_to_time(cron_jobs, show_time_only=show_time)
     cron_jobs = sort_by_time(converted_jobs)
     print first_cron_job(cron_jobs)
-
-
