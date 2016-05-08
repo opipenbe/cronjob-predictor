@@ -33,23 +33,26 @@ def validate_cron_syntax(cron_line): #validates correct crontab lines
         return False
     if cron_line.startswith("@"): #check if it is special string
         print("Crontab entry contains special strings. Sorry they are not supported yet :(") #TODO?
-        quit()
+        quit(1)
     return True
 
 def get_time(cron_format):
     base = datetime.now() #get current system time
     #print "Current time:",base
-    iter = croniter(cron_format, base)
-    #TODO error handling, time global var?
-    aeg = iter.get_next(datetime)
-    #Todo next
+    try:
+        iter = croniter(cron_format, base)
+    except ValueError:
+        print "Program experienced error with crontab syntax. Sorry :("
+        quit(1)
+    aeg = iter.get_next(datetime) #time global var and next time?
     return aeg
 
 def syntax_to_time(cronjob_line_list): #create new list and replace cron syntax with times. Siia TODO
     #TODO better solution, better regex
     converted_list = []
     for line in cronjob_line_list: #convert cron syntax to time
-        muutuja = re.match('^((?:[^ ]* ){4}[^ ]*)',line).group(0)
+        muutuja = re.match('^([\S]+[\s]{1,}){4}[^ ]',line).group(0)#^((?:[^ ]* ){4}[^ ]*)
+        print muutuja
         muutuja2 = str(get_time(muutuja)) #hack
         line = line.replace(muutuja, muutuja2)
         converted_list.append(line)
