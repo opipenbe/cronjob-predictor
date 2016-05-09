@@ -32,4 +32,4 @@ Output root user's nearest cronjob:
 
 UNIX date command in conjuction with this script:
 
-             date -d"$(python cronjob_predictor.py)" +%H:%m
+             date -d"$(python cronjob_predictor.py)" +%H:%M
