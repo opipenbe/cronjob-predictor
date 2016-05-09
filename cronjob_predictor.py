@@ -8,15 +8,14 @@ import argparse
 from croniter import croniter
 from datetime import datetime
 
+# Lets add some arguments...
 parser = argparse.ArgumentParser()
-parser.add_argument("-all", help="show cronjob time and corresponding command",
+parser.add_argument("-cmd", help="show cronjob time and corresponding command",
                     action="store_true")
 parser.add_argument("-user", help="specify cron table user")
 args = parser.parse_args()
 
-# TODO manual
-
-# date -d"2016-05-07 05:00:00" +%d
+# Functions
 
 def get_cron_table(): # read crontab output into variable
     try:
@@ -26,7 +25,7 @@ def get_cron_table(): # read crontab output into variable
             cron_table = subprocess.check_output('crontab -l', shell=True)
     except: # no cron entries
         raise
-        quit()
+        exit(1)
     return cron_table
 
 def find_cron_jobs(cron_table): # append cronjob lines into list
@@ -44,7 +43,7 @@ def validate_cron_syntax(cron_line): # validates correct crontab lines
         return False
     if cron_line.startswith("@"): # check if it is special string
         print("Crontab entry contains special string(s). Sorry is not supported yet :(") #TODO?
-        quit(1)
+        exit(1)
     return True
 
 def get_time(cron_format, base = datetime.now()):
@@ -52,16 +51,16 @@ def get_time(cron_format, base = datetime.now()):
         iter = croniter(cron_format, base)
     except ValueError:
         print "Program experienced error with crontab syntax. Sorry :("
-        quit(1)
-    aeg = iter.get_next(datetime) #time global var and next time?
-    return aeg
+        exit(1)
+    clock = iter.get_next(datetime) #time global var and next time?
+    return clock
 
-def syntax_to_time(cronjob_line_list, show_time_only=False, time_base = datetime.now()): #create new list and replace cron syntax with times.
+def syntax_to_time(cronjob_line_list, show_time_only=True, time_base = datetime.now()): #create new list and replace cron syntax with times.
     converted_list = []
     for line in cronjob_line_list: #convert cron syntax to time
-        cron_syntax = re.match('^([\S]+[\s]{1,}){4}[^ ]',line).group(0) #find cron syntax
+        cron_syntax = re.match('^([\S]+[\s]{1,}){4}[\S]+',line).group(0) #find cron syntax
         converted_time = str(get_time(cron_syntax, base=time_base))
-        if show_time_only == True:
+        if show_time_only == False:
             line = converted_time
         else:
             line = line.replace(cron_syntax, converted_time)
@@ -80,13 +79,20 @@ def first_cron_job(list):
 
 if __name__ == "__main__":
 
-    show_time = True
-    if args.all:
-        show_time = False
+    show_cmd = False
+    if args.cmd:
+        show_cmd = True
 
     cron_table = get_cron_table()
     cron_jobs = find_cron_jobs(cron_table)
 
-    converted_jobs = syntax_to_time(cron_jobs, show_time_only=show_time)
+    converted_jobs = syntax_to_time(cron_jobs, show_time_only=show_cmd)
     cron_jobs = sort_by_time(converted_jobs)
-    print first_cron_job(cron_jobs)
+    #print first_cron_job(cron_jobs)
+    for job in cron_jobs:
+        print job
+
+# TODO manual
+#exit cmd
+#users
+# date -d"2016-05-07 05:00:00" +%d
