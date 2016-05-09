@@ -16,6 +16,8 @@ croniter
 
 cronjob_predictor.py [-h] [-cmd] [-user USER]
 
-#Example:
+#Examples:
 
 *sudo python cronjob_predictor.py -user=root* # output root user nearest cronjob
+
+[//]: <date -d"$(python cronjob_predictor.py)" +%H:%m> 
