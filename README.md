@@ -25,7 +25,7 @@ Output nearest cronjob with corresponding command:
 
              python cronjob_predictor.py -cmd
 
-Output root user nearest cronjob:
+Output root user's nearest cronjob:
 
              sudo python cronjob_predictor.py -user root
 
