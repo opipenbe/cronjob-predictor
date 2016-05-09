@@ -8,6 +8,10 @@ import argparse
 from croniter import croniter
 from datetime import datetime
 
+# Error codes:
+#   1 - crontab program error
+#   2 - error reading cron syntax
+
 # Lets add some arguments...
 parser = argparse.ArgumentParser()
 parser.add_argument("-cmd", help="show cronjob time and corresponding command", action="store_true")
@@ -81,7 +85,3 @@ if __name__ == "__main__":
     cron_jobs = find_cron_jobs(cron_table) # store cronjobs into list
     converted_jobs = syntax_to_time(cron_jobs, show_time_only=show_cmd) # convert cron syntax to time
     print first_cron_job(converted_jobs) # output nearest cronjob
-
-# TODO manual
-#exit cmd
-# date -d"2016-05-07 05:00:00" +%d
