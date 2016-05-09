@@ -1,5 +1,7 @@
 # README #
 
+This script reads current system crontab and outputs nearest cronjob.
+
 #Requirements
 
 Python 2.7
@@ -14,4 +16,5 @@ croniter
 
 cronjob_predictor.py [-h] [-cmd] [-user USER]
 
-Example:
+Examples:
+*sudo python cronjob_predictor.py -user=root* # output root user nearest cronjob
