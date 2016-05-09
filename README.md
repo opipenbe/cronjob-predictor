@@ -10,7 +10,7 @@ croniter
 
 #Installation
 
-*sudo pip install croniter*
+              sudo pip install croniter
 
 #Usage
 
