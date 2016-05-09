@@ -17,10 +17,18 @@ croniter
 cronjob_predictor.py [-h] [-cmd] [-user USER]
 
 #Examples:
+Output nearest cronjob:
 
-Output root user nearest cronjob
+              python cronjob_predictor.py
+
+Output nearest cronjob with corresponding command:
+
+             python cronjob_predictor.py -cmd
+
+Output root user nearest cronjob:
 
              sudo python cronjob_predictor.py -user=root
+
 
 UNIX date command in conjuction with this script:
 
