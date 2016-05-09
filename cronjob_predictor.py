@@ -10,55 +10,53 @@ from datetime import datetime
 
 # Lets add some arguments...
 parser = argparse.ArgumentParser()
-parser.add_argument("-cmd", help="show cronjob time and corresponding command",
-                    action="store_true")
-parser.add_argument("-user", help="specify cron table user")
+parser.add_argument("-cmd", help="show cronjob time and corresponding command", action="store_true")
+parser.add_argument("-user", help="specify crontab user. Example: -user=root")
 args = parser.parse_args()
 
 # Functions
-
-def get_cron_table(): # read crontab output into variable
+def get_cron_table(): # read current crontab output into variable
     try:
-        if args.user:
-            cron_table = subprocess.check_output('crontab -l', shell=True)
+        if args.user: # check -user option
+            cmd = 'crontab -l -u %s' % args.user
+            cron_table = subprocess.check_output(cmd, shell=True)
         else:
-            cron_table = subprocess.check_output('crontab -l', shell=True)
-    except: # no cron entries
-        raise
+            cmd = 'crontab -l'
+            cron_table = subprocess.check_output(cmd, shell=True)
+    except subprocess.CalledProcessError: # cron program error
         exit(1)
     return cron_table
 
-def find_cron_jobs(cron_table): # append cronjob lines into list
+def find_cron_jobs(cron_table): # append cronjob lines from variable into list
     lines = []
     for line in cron_table.splitlines():
-        line = line.lstrip() # remove leading whitespaces
+        line = line.lstrip() # erase leading whitespaces
         if validate_cron_syntax(line) == True:
             lines.append(line)
     return lines
 
-def validate_cron_syntax(cron_line): # validates correct crontab lines
-    if not cron_line.strip(): # check for empty lines
+def validate_cron_syntax(crontab_line): # validates correct crontab lines
+    if not crontab_line.strip(): # skip empty lines
         return False
-    if cron_line.startswith("#"): # check if it is not comment
+    if crontab_line.startswith("#"): # skip comments
         return False
-    if cron_line.startswith("@"): # check if it is special string
-        print("Crontab entry contains special string(s). Sorry is not supported yet :(") #TODO?
-        exit(1)
+    if crontab_line.startswith("@"): #  skip special strings, they are not supported yet: @reboot etc.
+        return False
     return True
 
-def get_time(cron_format, base = datetime.now()):
+def get_time(cron_format, base = datetime.now()): # convert cron syntax into time
     try:
         iter = croniter(cron_format, base)
     except ValueError:
         print "Program experienced error with crontab syntax. Sorry :("
-        exit(1)
-    clock = iter.get_next(datetime) #time global var and next time?
+        exit(2)
+    clock = iter.get_next(datetime)
     return clock
 
 def syntax_to_time(cronjob_line_list, show_time_only=True, time_base = datetime.now()): #create new list and replace cron syntax with times.
     converted_list = []
-    for line in cronjob_line_list: #convert cron syntax to time
-        cron_syntax = re.match('^([\S]+[\s]{1,}){4}[\S]+',line).group(0) #find cron syntax
+    for line in cronjob_line_list: #converts cron syntax to time
+        cron_syntax = re.match('^([\S]+[\s]{1,}){4}[\S]+',line).group(0) #find cron syntax from line
         converted_time = str(get_time(cron_syntax, base=time_base))
         if show_time_only == False:
             line = converted_time
@@ -67,32 +65,23 @@ def syntax_to_time(cronjob_line_list, show_time_only=True, time_base = datetime.
         converted_list.append(line)
     return converted_list
 
-def sort_by_time(list):
-    return sorted(list)
-
-def first_cron_job(list):
+def first_cron_job(list): # finds first cron job from list
+    jobs = sorted(list)  # sort list by time
     try:
-        job = list[0]
+        job = jobs[0]
     except IndexError:
         job = ""
     return job
 
 if __name__ == "__main__":
-
     show_cmd = False
-    if args.cmd:
+    if args.cmd: # check "-cmd" option
         show_cmd = True
-
-    cron_table = get_cron_table()
-    cron_jobs = find_cron_jobs(cron_table)
-
-    converted_jobs = syntax_to_time(cron_jobs, show_time_only=show_cmd)
-    cron_jobs = sort_by_time(converted_jobs)
-    #print first_cron_job(cron_jobs)
-    for job in cron_jobs:
-        print job
+    cron_table = get_cron_table() # get running crontab output into variable
+    cron_jobs = find_cron_jobs(cron_table) # store cronjobs into list
+    converted_jobs = syntax_to_time(cron_jobs, show_time_only=show_cmd) # convert cron syntax to time
+    print first_cron_job(converted_jobs) # output nearest cronjob
 
 # TODO manual
 #exit cmd
-#users
 # date -d"2016-05-07 05:00:00" +%d
