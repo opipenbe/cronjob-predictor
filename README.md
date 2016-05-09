@@ -33,3 +33,6 @@ Output root user's nearest cronjob:
 UNIX date command in conjuction with this script:
 
              date -d"$(python cronjob_predictor.py)" +%H:%M
+
+#Licence:
+The MIT License (MIT) Copyright (c) 2016 Olari Pipenberg
