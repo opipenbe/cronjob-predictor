@@ -20,8 +20,8 @@ cronjob_predictor.py [-h] [-cmd] [-user USER]
 
 Output root user nearest cronjob
 
-             *sudo python cronjob_predictor.py -user=root*
+             sudo python cronjob_predictor.py -user=root
 
 UNIX date command in conjuction with this script:
 
-             *date -d"$(python cronjob_predictor.py)" +%H:%m*
+             date -d"$(python cronjob_predictor.py)" +%H:%m
