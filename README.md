@@ -1,4 +1,4 @@
-# Cronjob_predictor #
+# Cronjob predictor #
 
 This script reads user crontab and outputs nearest cronjob.
 
