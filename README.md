@@ -1,6 +1,6 @@
 # Cronjob_predictor #
 
-This script reads current system crontab and outputs nearest cronjob.
+This script reads user crontab and outputs nearest cronjob.
 
 #Requirements
 
